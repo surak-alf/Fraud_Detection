@@ -1,12 +1,58 @@
-# src/data_processing.py
-
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 import logging
 
 # Configure logging (do this once)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+def univariate_analysis(data):
+    """Performs and displays univariate analysis on the given DataFrame."""
+
+    def plot_categorical(data, column, title, figsize=(8, 5)):
+        """Plots a categorical variable."""
+        plt.figure(figsize=figsize)
+        sns.countplot(x=column, data=data, order=data[column].value_counts().index)
+        plt.title(title)
+        plt.xlabel(column)
+        plt.ylabel('Frequency')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        plt.show()
+
+    def plot_numerical(data, column, title, figsize=(10, 6), bins=30):  # Added bins parameter
+        """Plots a numerical variable (histogram with KDE and box plot)."""
+        plt.figure(figsize=figsize)
+        sns.histplot(data[column], kde=True, bins=bins)  # Use bins parameter
+        plt.title(title)
+        plt.xlabel(column)
+        plt.ylabel('Frequency')
+        plt.show()
+
+        plt.figure(figsize=(8, 5))
+        sns.boxplot(y=data[column])
+        plt.title(title + " (Box Plot)")
+        plt.ylabel(column)
+        plt.show()
+
+    # Categorical Variables
+    plot_categorical(data, 'sex', 'Sex Distribution')
+    plot_categorical(data, 'source', 'Source Distribution', figsize=(10, 6))
+    plot_categorical(data, 'browser', 'Browser Distribution', figsize=(12, 7))
+    plot_categorical(data, 'class', 'Class Distribution (Fraud vs. Not Fraud)')  # Class distribution
+
+    # Numerical Variables
+    plot_numerical(data, 'purchase_value', 'Distribution of Purchase Values')
+    plot_numerical(data, 'age', 'Age Distribution')  # Age distribution (histogram + boxplot)
+
+
+
+
+
+
+
 
 def handle_missing_values(fraud_data, strategy='impute', columns=None):  # Changed df to fraud_data
     """Handles missing values."""
@@ -107,26 +153,3 @@ def normalize_numerical_features(fraud_data, columns=None):  # Changed df to fra
         scaler = MinMaxScaler()
         fraud_data[col] = scaler.fit_transform(fraud_data[[col]])  # Use fraud_data here
     return fraud_data  # Return the modified fraud_data
-
-
-
-# Example usage (in your notebook or main script):
-if __name__ == '__main__':
-    fraud_data_path = 'data/Fraud_Data.csv'
-    ip_to_country_path = 'data/IpAddress_to_Country.csv'
-
-    try:
-        fraud_data, ip_df = load_data(fraud_data_path, ip_to_country_path)  # Load into fraud_data
-
-        if fraud_data is not None:
-            fraud_data = clean_data(fraud_data)  # Pass fraud_data
-            fraud_data = handle_missing_values(fraud_data)  # Pass fraud_data
-            if ip_df is not None:
-              fraud_data = merge_ip_country(fraud_data, ip_df) # Pass fraud_data
-            fraud_data = encode_categorical_features(fraud_data)  # Pass fraud_data
-            fraud_data = normalize_numerical_features(fraud_data)  # Pass fraud_data
-            logger.info("Data preprocessing completed.")
-            print(fraud_data.head()) # Or save: fraud_data.to_csv("processed_data.csv", index=False)
-
-    except Exception as e:
-        logger.exception(f"An error occurred: {e}")
