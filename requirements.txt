@@ -3,3 +3,10 @@ numpy
 scikit-learn
 matplotlib
 seaborn
+tensorflow
+keras
+xgboost
+lightgbm
+mlflow
+flask
+joblib
